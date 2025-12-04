@@ -47,7 +47,7 @@ function attacks.isinhitzone()
         local nearesty = math.max(circleY - circleRadius, math.min(player.hity + player.hitsize / 2, circley + circleradius))
 
         local deltax = nearestx - (player.hitx + player.hitsize / 2)
-        local deltay = nearestx - (player.hity + player.hitsize / 2)
+        local deltay = nearesty - (player.hity + player.hitsize / 2)
 
         if (deltax * deltax + deltay * deltay) < (circletadius * circletadius) then
             return true
