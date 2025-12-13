@@ -52,7 +52,6 @@ function player.giveitemdebug(name, description, effect, bonus)
             effect = {movementspeed = effect.movementspeed, invincibilitytime = effect.invincibilitytime, damagetaken = effect.damagetaken},
             bonus = bonus,
             id = #player.items + 1}
-    print(item.name .. ", " .. item.description)
     table.insert(player.items, item)
 end
 
@@ -63,11 +62,6 @@ function player.calculatestats()
     end
     for _, item in pairs(player.items) do -- Base, Upgrade, Item, Effect
         newstats.movementspeed = item.effect.movementspeed + newstats.movementspeed
-        print()
-        print(item.effect.movementspeed)
-        print(item.effect.invincibilitytime)
-        print(item.effect.damagetaken)
-        print(newstats.damagetaken)
         newstats.damagetaken = item.effect.damagetaken + newstats.damagetaken
         newstats.invincibilitytime = item.effect.invincibilitytime + newstats.invincibilitytime
         newstats.damage = item.effect.damagetaken + newstats.invincibilitytime

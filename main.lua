@@ -9,7 +9,8 @@ main = {
     playercount = 1,
     state = "Game",
     debug = true,
-    input_mode = "Controller"
+    input_mode = "Controller",
+    dt = 0
 }
 
 assets = {
@@ -24,15 +25,23 @@ local function loadasset(name, type)
         imagedata = love.graphics.newImage(image)
         table.insert(assets.effect, {name = name, image = imagedata, id = assets.count})
     end
+end
 
+function main.reloadassets()
+    assets = {
+        count = 0,
+        effect = {},
+    }
+
+    -- Effects
+    loadasset("judgement", "effect")
 end
 
 function love.load()
+    main.winw, main.winh = love.graphics.getDimensions()
+
     player.giveitemdebug("TestName", "Test Description", {movementspeed = 200, invincibilitytime = 0.5, damagetaken = 1})
-    attacks.createshearhitbox(200, 200, "down")
-    attacks.createshearhitbox(150, 150, "up")
-    attacks.createshearhitbox(200, 200, "right")
-    attacks.createshearhitbox(150, 150, "left")
+    attacks.createshearhitbox(200, 200, "up", 1)
 
     for _ , assettype in pairs(assets) do
         if type(assettype) == "table" then
@@ -47,6 +56,7 @@ end
 
 function love.update(dt)
     main.elapsedtime = main.elapsedtime + dt
+    main.dt = dt
     if inputs.button_pressed("debug", "Keyboard") and not debugheld then
         debugheld = true
         main.debug = not main.debug
