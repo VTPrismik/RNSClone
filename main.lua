@@ -1,3 +1,5 @@
+local json = require("modules/json")
+
 local inputs = require("inputs")
 local player = require("player")
 local attacks = require("attacks")
@@ -15,23 +17,30 @@ main = {
 
 assets = {
     count = 0,
-    effect = {},
+    effects = {},
+    items = {}
 }
 
 local function loadasset(name, type)
     assets.count = assets.count + 1
-    if type == "effect" then
+    if type == "effects" then
         local image = "assets/" .. type .. "/" .. name .. ".png"
         imagedata = love.graphics.newImage(image)
-        assets.effect[name] = {image = imagedata, id = assets.count}
+        assets.effects[name] = {image = imagedata, id = assets.count}
     end
 end
 
 function reloadassets()
     assets = {
         count = 0,
-        effect = {},
+        effects = {},
+        items = {}
     }
+
+    assets.items["file"] = io.open("assets/items.json")
+    assets.items["jsonstr"] = assets.items["file"]:read("*all")
+    assets.items["jsontab"] = json.decode(assets.items["jsonstr"])
+    io.close(assets.items["file"])
 
     loadasset("judgement", "effect")
     loadasset("haunted", "effect")
@@ -41,7 +50,9 @@ end
 function love.load()
     main.winw, main.winh = love.graphics.getDimensions()
 
-    player.giveitemdebug("TestName", "Test Description", {movementspeed = 200, invincibilitytime = 0.5, damagetaken = 0})
+    reloadassets()
+
+    player.giveitem("shield-generator")
     attacks.createshearhitbox(200, 200, "up", 1)
     attacks.createrectanglehitbox(300, 300, 100, 100, 1, 1000, true)
 

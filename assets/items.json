@@ -1,0 +1,35 @@
+{
+  "example": {
+    "name": "",
+    "description": "",
+    "effect": {
+      "movementspeed": 0,
+      "damage": 0,
+      "cooldownreduce": 0,
+      "invincibilitytime": 0,
+      "damagetaken": 0
+    },
+    "bonus": {
+      "type": "",
+      "arg1": "",
+      "arg2": ""
+    }
+  },
+  "shield-generator": {
+    "name": "Shield Generator",
+    "description": "Grants a shield point after every stage. Max of 2. Reduces movement speed slightly.",
+    "effect": {
+      "movementspeed": -50,
+      "damage": 0,
+      "cooldownreduce": 0,
+      "invincibilitytime": 0,
+      "damagetaken": 0
+    },
+    "bonus": {
+      "type": "stageshield",
+      "arg1": 1,
+      "arg2": 2
+    }
+  }
+}
+

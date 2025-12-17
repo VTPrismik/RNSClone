@@ -16,7 +16,7 @@ local player = {
         invincibilitytime = 0.5,
         damagetaken = 1,
         damage = 1,
-        attackspeed = 1,
+        cooldownreduce = 1,
     },
 
     items = {},
@@ -27,7 +27,7 @@ local player = {
         invincibilitytime = 50,
         damagetaken = 1,
         damage = 1,
-        attackspeed = 1,
+        cooldownreduce = 1,
     }
 }
 
@@ -52,7 +52,7 @@ end
 --}
 
 function player.giveitem(name)
-    -- Put actual items and stats here. im too lazy to do that right now
+    table.insert(player.items, assets.items["jsontab"][name])
 end
 
 function player.giveitemdebug(name, description, effect, bonus)
