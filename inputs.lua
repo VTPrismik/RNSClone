@@ -1,7 +1,12 @@
-local inputs = {}
+local inputs = {joysticks = {}}
 local pressedkeys = {}
 local pressedbuttons = {}
-local joystick = love.joystick.getJoysticks()[1]
+local joysticks = love.joystick.getJoysticks()
+inputs.joysticks = joysticks
+
+for _, joystick in ipairs(love.joystick.getJoysticks()) do
+    print("Connected: " .. joystick:getName())
+end
 
 function normalize(vector)
     local length = math.sqrt(vector.x ^ 2 + vector.y ^ 2)
@@ -16,18 +21,17 @@ function inputs.button_pressed (button, inputmode, id)
     for _, value in ipairs(inputs.get_current_inputs(inputmode, id)) do
         if value == button then
             return true
-        else
-            return false
         end
     end
+    return false
 end
 
 -- Keyboard Map
     local keyboard_movement_map = {
-        ["w"] = {x = 0, y = -1}, -- up
-        ["s"] = {x = 0, y = 1}, -- down
-        ["a"] = {x = -1, y = 0}, -- left
-        ["d"] = {x = 1, y = 0}, -- right
+        ["w"] = {x = 0, y = -1}, -- Up
+        ["s"] = {x = 0, y = 1}, -- Down
+        ["a"] = {x = -1, y = 0}, -- Left
+        ["d"] = {x = 1, y = 0}, -- Right
     }
 
     local keyboard_action_map = {
@@ -41,7 +45,9 @@ end
         ["f"] = "interact",
         -- Keyboard Specific
         ["f11"] = "fullscreen",
-        ["f10"] = "debug"
+        ["f10"] = "debug",
+        ["pageup"] = "up",
+        ["pagedown"] = "down"
     }
 
     function love.keypressed(key)
@@ -84,23 +90,23 @@ end
         ["dpdown"] = "interact",
     }
 
-    function love.gamepadpressed(joystickobj, button)
-        if joystickobj == joystick then
-            pressedbuttons[button] = true
+    function love.gamepadpressed(joystick, button)
+        if not pressedbuttons[joystick] then
+            pressedbuttons[joystick] = {}
+        end
+        pressedbuttons[joystick][button] = true
+    end
+
+    function love.gamepadreleased(joystick, button)
+        if pressedbuttons[joystick] then
+            pressedbuttons[joystick][button] = nil
         end
     end
 
-    function love.gamepadreleased(joystickobj, button)
-        if joystickobj == joystick then
-            pressedbuttons[button] = nil
-        end
-    end
-
-    function gamepad_inputs()
+    function gamepad_inputs(joystick)
         local currentactions = {}
         local currentdirection = {x = 0, y = 0}
         local deadzone = 0.15
-
         if joystick and joystick:isConnected() and joystick:isGamepad() then
 
             local x = joystick:getGamepadAxis("leftx")
@@ -112,8 +118,10 @@ end
             currentdirection.x = x
             currentdirection.y = y
 
+            local buttonsforjoystick = pressedbuttons[joystick] or {}
+
             for button, action in pairs(gamepad_action_map) do
-                if pressedbuttons[button] then
+                if buttonsforjoystick[button] then
                     table.insert(currentactions, action)
                 end
             end
@@ -124,15 +132,12 @@ end
 
 function inputs.get_current_inputs(inputmode, id)
     inputlist = {}
+    inputs.joysticks = joysticks
 
     if inputmode == "Keyboard" then
         return keyboard_inputs()
     elseif inputmode == "Controller" then
-        if id == 2 then -- temporary just to test 2 inputs without setting up networking
-            print("AAA")
-            return keyboard_inputs()
-        end
-        return gamepad_inputs()
+        return gamepad_inputs(joysticks[id])
     else
         print("Invalid input mode (" .. inputmode .. ")")
         return keyboard_inputs()

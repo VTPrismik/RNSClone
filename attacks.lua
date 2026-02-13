@@ -13,16 +13,16 @@ end
 
 function attacks.createshearhitbox(x, y, direction, chargetime)
     if direction == "left" then
-        attacks.createrectanglehitbox(0, 0, x, main.winh, chargetime, 1)
+        attacks.createrectanglehitbox(0, 0, x, main.resolution.height, chargetime, 1)
     end
     if direction == "right" then
-        attacks.createrectanglehitbox(x, 0, main.winw - x, main.winh, chargetime, 1)
+        attacks.createrectanglehitbox(x, 0, main.resolution.width - x, main.resolution.height, chargetime, 1)
     end
     if direction == "up" then
-        attacks.createrectanglehitbox(0, 0, main.winw, y, chargetime, 1)
+        attacks.createrectanglehitbox(0, 0, main.resolution.width, y, chargetime, 1)
     end
     if direction == "down" then
-        attacks.createrectanglehitbox(0, y, main.winw, main.winh - y, chargetime, 1)
+        attacks.createrectanglehitbox(0, y, main.resolution.width, main.resolution.height - y, chargetime, 1)
     end
 end
 
@@ -105,8 +105,7 @@ function attacks.draw()
         end
 
     if main.debug then
-        love.graphics.setColor(0, 0, 1)
-        love.graphics.print("Time: " .. main.elapsedtime, 0, 120)
+        love.graphics.setColor(0, 1, 1)
     end
     love.graphics.setColor(1, 1, 1)
 end

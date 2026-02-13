@@ -3,16 +3,19 @@ local inputs = require("inputs")
 local player = require("player")
 local attacks = require("attacks")
 
+time = love.timer.getTime()
+
+deskwidth, deskheight = love.window.getDesktopDimensions()
+
 main = {
     elapsedtime = 0,
-    winw = 0,
-    winh = 0,
     playercount = 1,
     state = "Loading",
     debug = true,
-    input_mode = "Controller",
     dt = 0,
-    stage = 0
+    scale = 1,
+    baseresolution = {width = deskwidth, height = deskheight},
+    resolution = {width = deskwidth, height = deskheight}
 }
 
 assets = {
@@ -23,8 +26,9 @@ assets = {
 
 players = {}
 
-local function loadasset(name, type)
-    assets.count = assets.count + 1
+print()
+
+local function loadimgasset(name, type)
     if type == "effects" then
         local image = "assets/" .. type .. "/" .. name .. ".png"
         imagedata = love.graphics.newImage(image)
@@ -34,9 +38,8 @@ end
 
 function reloadassets()
     assets = {
-        count = 0,
         effects = {},
-        items = {}
+        items = {},
     }
 
     assets.items["file"] = io.open("assets/items.json")
@@ -44,22 +47,22 @@ function reloadassets()
     assets.items["jsontab"] = json.decode(assets.items["jsonstr"])
     io.close(assets.items["file"])
 
-    loadasset("judgement", "effect")
-    loadasset("haunted", "effect")
-    loadasset("shielded", "effect")
+    loadimgasset("judgement", "effect")
+    loadimgasset("haunted", "effect")
+    loadimgasset("shielded", "effect")
 end
 
 function love.load()
-    main.winw, main.winh = love.graphics.getDimensions()
+    love.window.setMode(main.resolution.width, main.resolution.height)
 
-    table.insert(players, player.newplayer(1))
-    table.insert(players, player.newplayer(2))
+    table.insert(players, player.newplayer(1, "Controller"))
+    table.insert(players, player.newplayer(2, "Keyboard"))
 
     reloadassets()
 
     players[1].giveitem("speed_potion")
     players[1].giveitem("shield_potion")
-    players[1].giveeffect("speed_boost")
+    players[1].giveeffect("speed_boost", 20)
     attacks.createshearhitbox(200, 200, "up", 1)
     attacks.createrectanglehitbox(300, 300, 100, 100, 1, 1000, true)
 
@@ -73,13 +76,13 @@ function love.load()
             end
         end
     end
+    print(time)
 end
 
 function love.update(dt)
     main.elapsedtime = main.elapsedtime + dt
     main.dt = dt
-    local debugheld
-    local fullscreenheld
+
     if inputs.button_pressed("debug", "Keyboard") and not debugheld then
         debugheld = true
         main.debug = not main.debug
@@ -90,10 +93,47 @@ function love.update(dt)
 
     if inputs.button_pressed("fullscreen", "Keyboard") and not fullscreenheld then
         fullscreenheld = true
-        love.window.setFullscreen(not love.window.getFullscreen)
+
+        if not love.window.getFullscreen() then
+            prevresolution = {width = main.resolution.width, height = main.resolution.height}
+            prevscale = main.scale
+            main.scale = 1
+            main.resolution.width = main.baseresolution.width
+            main.resolution.height = main.baseresolution.height
+            love.window.setMode(main.resolution.width, main.resolution.height, {fullscreen = true})
+        else
+            main.scale = prevscale
+            main.resolution.width = prevresolution.width
+            main.resolution.height = prevresolution.height
+            love.window.setMode(main.resolution.width, main.resolution.height, {fullscreen = false})
+        end
+
     end
+
     if not inputs.button_pressed("fullscreen", "Keyboard") and fullscreenheld then
         fullscreenheld = false
+    end
+
+    if inputs.button_pressed("up", "Keyboard") and not upheld then
+        upheld = true
+        main.scale = main.scale + 0.25
+        main.resolution.width = main.baseresolution.width * main.scale
+        main.resolution.height = main.baseresolution.height * main.scale
+        love.window.setMode(main.resolution.width, main.resolution.height)
+    end
+    if not inputs.button_pressed("up", "Keyboard") and upheld then
+        upheld = false
+    end
+
+    if inputs.button_pressed("down", "Keyboard") and not downheld then
+        downheld = true
+        main.scale = main.scale - 0.25
+        main.resolution.width = main.baseresolution.width * main.scale
+        main.resolution.height = main.baseresolution.height * main.scale
+        love.window.setMode(main.resolution.width, main.resolution.height)
+    end
+    if not inputs.button_pressed("down", "Keyboard") and downheld then
+        downheld = false
     end
 
     --if player.health <= 0 then
@@ -105,7 +145,7 @@ function love.update(dt)
     elseif main.state == "Game" then
         attacks.update(dt)
         for _, p in ipairs(players) do
-            p.update(dt)
+            p.update()
         end
 
     elseif state == "Dead" then
@@ -113,11 +153,10 @@ function love.update(dt)
 end
 
 function love.draw()
-    main.winw, main.winh = love.graphics.getDimensions()
-
     love.graphics.setColor(0, 0.2, 0)
-    love.graphics.rectangle("fill", 0, 0, main.winw, main.winh)
+    love.graphics.rectangle("fill", 0, 0, main.resolution.width, main.resolution.height)
     love.graphics.setColor(1, 1, 1)
+    love.graphics.scale(main.scale)
 
     if main.state == "Loading" then
         reloadassets()
@@ -128,7 +167,7 @@ function love.draw()
     elseif main.state == "Game" then
         attacks.draw()
         for _, p in ipairs(players) do
-            p.draw(dt)
+            p.draw()
         end
 
     elseif main.state == "Dead" then
@@ -136,9 +175,11 @@ function love.draw()
         love.graphics.rectangle("fill", 0, 0, w, h)
     end
 
+
     if main.debug then
-        love.graphics.setColor(0, 0, 1)
-        love.graphics.print("Width: " .. main.winw .. ", " .. "Height: " .. main.winh, 0, 15)
+        love.graphics.setColor(0, 1, 1)
+        love.graphics.print("Width: " .. main.resolution.width .. ", " .. "Height: " .. main.resolution.height, 0, 15)
+        love.graphics.print("Time: " .. main.elapsedtime, 0, 135)
         fps = love.timer.getFPS()
         love.graphics.print(fps, 0, 0)
     end
