@@ -64,7 +64,7 @@ function player.newplayer(id, inputmode)
     end
 
     function player.giveitem(name)
-        table.insert(player.items, assets.items["jsontab"][name])
+        table.insert(player.items, assets.items["hjsontab"][name])
         player.calculatestats()
     end
 

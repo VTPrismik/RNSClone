@@ -1,4 +1,4 @@
-local json = require("modules/json")
+local hjson = require("modules/hjson")
 local inputs = require("inputs")
 local player = require("player")
 local attacks = require("attacks")
@@ -42,9 +42,9 @@ function reloadassets()
         items = {},
     }
 
-    assets.items["file"] = io.open("assets/items.json")
-    assets.items["jsonstr"] = assets.items["file"]:read("*all")
-    assets.items["jsontab"] = json.decode(assets.items["jsonstr"])
+    assets.items["file"] = io.open("assets/items.hjson")
+    assets.items["hjsonstr"] = assets.items["file"]:read("*all")
+    assets.items["hjsontab"] = hjson.decode(assets.items["hjsonstr"])
     io.close(assets.items["file"])
 
     loadimgasset("judgement", "effect")
